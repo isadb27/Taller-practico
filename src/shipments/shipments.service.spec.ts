@@ -100,4 +100,72 @@ describe('ShipmentsService', () => {
       NotFoundException,
     );
   });
+
+  it('creates and saves a shipment', async () => {
+    // Arrange
+    const data = {
+      trackingCode: 'SHIP-100',
+      destination: 'Cali',
+    };
+
+    const builtShipment = {
+      ...data,
+      status: ShipmentStatus.CREATED,
+    } as ShipmentEntity;
+
+    const savedShipment = {
+      id: 1,
+      ...data,
+      status: ShipmentStatus.CREATED,
+    } as ShipmentEntity;
+
+    repositoryMock.create.mockReturnValue(builtShipment);
+    repositoryMock.save.mockResolvedValue(savedShipment);
+
+    // Act
+    const result = await service.create(data);
+
+    // Assert
+    expect(repositoryMock.create).toHaveBeenCalledWith({
+      trackingCode: 'SHIP-100',
+      destination: 'Cali',
+      status: ShipmentStatus.CREATED,
+    });
+    expect(repositoryMock.save).toHaveBeenCalledWith(builtShipment);
+    expect(result).toEqual(savedShipment);
+  });
+
+  it('dispatches and saves a valid shipment', async () => {
+    // Arrange
+    const shipment = {
+      id: 3,
+      trackingCode: 'SHIP-003',
+      destination: 'Pereira',
+      status: ShipmentStatus.CREATED,
+    } as ShipmentEntity;
+
+    const dispatchedShipment = {
+      ...shipment,
+      status: ShipmentStatus.DISPATCHED,
+    } as ShipmentEntity;
+
+    repositoryMock.findOneBy.mockResolvedValue(shipment);
+    repositoryMock.save.mockResolvedValue(dispatchedShipment);
+
+    // Act
+    const result = await service.dispatch(3);
+
+    // Assert
+    expect(shipmentRulesServiceMock.ensureCanBeDispatched).toHaveBeenCalledWith(
+      shipment,
+    );
+    expect(shipment.status).toBe(ShipmentStatus.DISPATCHED);
+    expect(repositoryMock.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 3,
+        status: ShipmentStatus.DISPATCHED,
+      }),
+    );
+    expect(result).toEqual(dispatchedShipment);
+  });
 });
