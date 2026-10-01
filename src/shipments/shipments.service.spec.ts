@@ -90,4 +90,14 @@ describe('ShipmentsService', () => {
     expect(result).toEqual(shipment);
     expect(repositoryMock.findOneBy).toHaveBeenCalledWith({ id: 7 });
   });
+
+  it('throws NotFoundException when the id does not exist', async () => {
+    // Arrange
+    repositoryMock.findOneBy.mockResolvedValue(null);
+
+    // Act and Assert
+    await expect(service.findOne(999)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
 });
