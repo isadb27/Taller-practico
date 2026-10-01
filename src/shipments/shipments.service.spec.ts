@@ -44,4 +44,50 @@ describe('ShipmentsService', () => {
     // Assert
     expect(service).toBeDefined();
   });
+
+  it('returns all shipments', async () => {
+    // Arrange
+    const shipments = [
+      {
+        id: 1,
+        trackingCode: 'SHIP-001',
+        destination: 'Bogotá',
+        status: ShipmentStatus.CREATED,
+      },
+      {
+        id: 2,
+        trackingCode: 'SHIP-002',
+        destination: 'Medellín',
+        status: ShipmentStatus.DISPATCHED,
+      },
+    ] as ShipmentEntity[];
+
+    repositoryMock.find.mockResolvedValue(shipments);
+
+    // Act
+    const result = await service.findAll();
+
+    // Assert
+    expect(result).toEqual(shipments);
+    expect(repositoryMock.find).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns a shipment when the id exists', async () => {
+    // Arrange
+    const shipment = {
+      id: 7,
+      trackingCode: 'SHIP-007',
+      destination: 'Barranquilla',
+      status: ShipmentStatus.CREATED,
+    } as ShipmentEntity;
+
+    repositoryMock.findOneBy.mockResolvedValue(shipment);
+
+    // Act
+    const result = await service.findOne(7);
+
+    // Assert
+    expect(result).toEqual(shipment);
+    expect(repositoryMock.findOneBy).toHaveBeenCalledWith({ id: 7 });
+  });
 });
